@@ -34,6 +34,7 @@
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             margin: 30px auto;
+            display: none;
         }
 
         header {
@@ -456,10 +457,42 @@
 </head>
 <body>
 
+<!-- LOGIN PAGE -->
+<div id="loginPage" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0077c2 0%, #005691 100%); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: white; padding: 40px; border-radius: 12px; width: 90%; max-width: 350px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);">
+        <h2 style="text-align: center; color: #0077c2; margin-bottom: 30px; font-size: 24px;">📋 Laporan GTI</h2>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #444;">Username:</label>
+                <input type="text" id="loginUsername" placeholder="Username" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 14px; color: #444;">Password:</label>
+                <input type="password" id="loginPassword" placeholder="Password" required style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px;">
+            </div>
+
+            <div id="loginError" style="display: none; background: #fee; color: #c33; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 12px; border-left: 3px solid #c33;"></div>
+
+            <button type="submit" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0077c2 0%, #005691 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">Login</button>
+        </form>
+
+        <p style="text-align: center; margin-top: 20px; font-size: 12px; color: #999;">
+            Demo: ade / ade123<br>
+            Admin: gitajatin / admin123
+        </p>
+    </div>
+</div>
+
 <div class="container">
     <header>
         <h1>📋 Laporan Gitajatin Intermedia</h1>
         <p>Sistem Pelaporan Lapangan Gitajatin Intermedia</p>
+        <div style="margin-top: 15px; text-align: center;">
+            <span id="userDisplay" style="font-size: 12px; opacity: 0.9; margin-right: 15px;"></span>
+            <button onclick="handleLogout()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">Logout</button>
+        </div>
     </header>
 
     <!-- Tabs -->
@@ -591,11 +624,104 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzeGRpb2VuaWRxYWhzbGdpZ21tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTA4MzcsImV4cCI6MjEwMjE4NjgzN30.viSn-gLnBdhRU8qN4VOaaHSclmAsWLBR31v9OGWm3i0';
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Auth state
+    let currentUser = null;
+    let currentRole = null;
+
     // Data management
     let generatedText = "";
     let selectedPhotos = [];
     let allLaporan = [];
     const NOMOR_ADMIN_WA = "6281949003000";
+
+    // LOGIN FUNCTIONS
+    async function handleLogin(event) {
+        event.preventDefault();
+        
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorDiv = document.getElementById('loginError');
+
+        try {
+            // Query users table
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', username)
+                .single();
+
+            if (error || !data) {
+                errorDiv.textContent = 'Username tidak ditemukan';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Check password
+            if (data.password !== password) {
+                errorDiv.textContent = 'Password salah';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // Login success - save session
+            currentUser = username;
+            currentRole = data.role;
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('currentRole', data.role);
+
+            // Hide login, show app
+            document.getElementById('loginPage').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+
+            // Update UI
+            document.getElementById('userDisplay').textContent = `👤 ${username} (${data.role})`;
+
+            // Reload data
+            await loadData();
+            renderDashboard();
+
+        } catch (err) {
+            console.error('Login error:', err);
+            errorDiv.textContent = 'Error: ' + err.message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    function handleLogout() {
+        if (confirm('Logout?')) {
+            currentUser = null;
+            currentRole = null;
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentRole');
+
+            // Show login, hide app
+            document.getElementById('loginPage').style.display = 'flex';
+            document.querySelector('.container').style.display = 'none';
+
+            // Reset form
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('loginUsername').focus();
+        }
+    }
+
+    function checkAuth() {
+        const user = localStorage.getItem('currentUser');
+        const role = localStorage.getItem('currentRole');
+
+        if (user && role) {
+            currentUser = user;
+            currentRole = role;
+            document.getElementById('loginPage').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+            document.getElementById('userDisplay').textContent = `👤 ${user} (${role})`;
+            return true;
+        } else {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.querySelector('.container').style.display = 'none';
+            return false;
+        }
+    }
 
     // Kumpulan layout input dinamis
     const templates = {
@@ -655,6 +781,12 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', async function() {
+        // Check if user is logged in
+        if (!checkAuth()) {
+            document.getElementById('loginUsername').focus();
+            return;
+        }
+
         renderForm();
         await loadData();
         setupPhotoUpload();
@@ -816,7 +948,8 @@
             nama: nama,
             status: 'Submitted',
             fotos: selectedPhotos,
-            chatText: generatedText
+            chatText: generatedText,
+            created_by: currentUser
         };
 
         const success = await saveLaporanToSupabase(newLaporan);
@@ -871,7 +1004,8 @@
                     nama: laporan.nama,
                     status: laporan.status,
                     fotos: laporan.fotos ? JSON.stringify(laporan.fotos) : null,
-                    chat_text: laporan.chatText
+                    chat_text: laporan.chatText,
+                    created_by: laporan.created_by
                 }]);
             
             return !error;
@@ -913,13 +1047,21 @@
         const search = document.getElementById('searchText').value.toLowerCase();
         const filterStatus = document.getElementById('filterStatus').value;
 
-        const filtered = allLaporan.filter(item => {
+        // Filter berdasarkan role
+        let dataToShow = allLaporan;
+        if (currentRole === 'teknisi') {
+            // Teknisi hanya lihat laporan miliknya sendiri
+            dataToShow = allLaporan.filter(item => item.created_by === currentUser);
+        }
+        // Admin lihat semua
+
+        const filtered = dataToShow.filter(item => {
             const matchSearch = !search || item.nama.toLowerCase().includes(search) || item.area.toLowerCase().includes(search);
             const matchStatus = !filterStatus || item.status === filterStatus;
             return matchSearch && matchStatus;
         });
 
-        document.getElementById('countLaporan').textContent = allLaporan.length;
+        document.getElementById('countLaporan').textContent = dataToShow.length;
         const tbody = document.querySelector('#tabelLaporan tbody');
 
         if (filtered.length === 0) {
