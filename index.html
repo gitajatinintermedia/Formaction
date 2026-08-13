@@ -14,106 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.2"></script>
     <style>
-        .speedtest-modal {
-            display: none;
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .speedtest-modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .speedtest-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .speedtest-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0077c2;
-            margin-bottom: 20px;
-        }
-
-        .speedtest-status {
-            font-size: 16px;
-            color: #666;
-            margin: 15px 0;
-            min-height: 24px;
-        }
-
-        .speedtest-result {
-            font-size: 36px;
-            font-weight: bold;
-            color: #0077c2;
-            margin: 20px 0;
-        }
-
-        .speedtest-unit {
-            font-size: 16px;
-            color: #999;
-        }
-
-        .speedtest-progress {
-            width: 100%;
-            height: 8px;
-            background: #eee;
-            border-radius: 4px;
-            margin: 20px 0;
-            overflow: hidden;
-        }
-
-        .speedtest-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #0288d1, #0077c2);
-            width: 0%;
-            animation: progress 1s ease-in-out;
-        }
-
-        @keyframes progress {
-            0% { width: 0%; }
-            100% { width: 100%; }
-        }
-
-        .speedtest-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .speedtest-buttons button {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .speedtest-close {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .speedtest-save {
-            background: #0288d1;
-            color: white;
-        }
-    </style>
-    <style>
         * {
             margin: 0;
             padding: 0;
@@ -324,17 +224,6 @@
 
         .btn-danger:hover {
             background-color: #dc2626;
-        }
-
-        .btn-secondary {
-            background-color: #6366f1;
-            color: white;
-            width: auto;
-            padding: 8px 16px;
-        }
-
-        .btn-secondary:hover {
-            background-color: #4f46e5;
         }
 
         .btn-small {
@@ -626,26 +515,6 @@
                 <div class="foto-preview" id="fotoPreview"></div>
             </div>
 
-            <!-- Upload Ookla Speedtest Screenshot -->
-            <div class="form-group">
-                <label>📊 Upload Ookla Speedtest Screenshot</label>
-                <input type="file" id="ooklaInput" accept="image/*">
-                <small style="color: #999; display: block; margin-top: 6px;">Upload hasil screenshot dari Ookla Speedtest app</small>
-                <div id="ooklaPreview" style="margin-top: 10px;"></div>
-            </div>
-
-            <!-- Speedtest -->
-            <div class="form-group">
-                <button type="button" class="btn-generate" style="background-color: #ff9800;" onclick="runSpeedtest()">⚡ Jalankan Speedtest</button>
-                <small style="color: #999; display: block; margin-top: 6px;">Ukur kecepatan internet (Download, Upload, Ping)</small>
-                <div id="speedtestInfo" style="display: none; background: #e8f5e9; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #2e7d32;">
-                    <strong>✓ Speedtest Selesai:</strong><br>
-                    📥 Download: <span id="infoDownload">-</span> Mbps<br>
-                    📤 Upload: <span id="infoUpload">-</span> Mbps<br>
-                    ⏱️ Ping: <span id="infoPing">-</span> ms
-                </div>
-            </div>
-
             <button type="button" class="btn-generate" onclick="generateText()">Generate Format Chat</button>
         </form>
 
@@ -685,13 +554,11 @@
                         <th>Jenis</th>
                         <th>Pelanggan</th>
                         <th>Status</th>
-                        <th>Speed</th>
-                        <th>Ookla</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="8" style="text-align: center; padding: 40px 20px; color: #999;">Belum ada laporan</td></tr>
+                    <tr><td colspan="6" style="text-align: center; padding: 40px 20px; color: #999;">Belum ada laporan</td></tr>
                 </tbody>
             </table>
         </div>
@@ -718,34 +585,6 @@
     </div>
 </div>
 
-<!-- Speedtest Modal -->
-<div id="speedtestModal" class="speedtest-modal">
-    <div class="speedtest-content">
-        <div class="speedtest-title">⚡ Speedtest</div>
-        <div class="speedtest-status" id="speedtestStatus">Siap dimulai...</div>
-        
-        <div id="speedtestPhase" style="display: none;">
-            <div class="speedtest-result" id="speedtestValue">0</div>
-            <div class="speedtest-unit" id="speedtestUnit">Mbps</div>
-            <div class="speedtest-progress">
-                <div class="speedtest-bar"></div>
-            </div>
-        </div>
-
-        <div id="speedtestResults" style="display: none; text-align: left; background: #f5f5f5; padding: 15px; border-radius: 6px; margin: 15px 0;">
-            <div style="margin: 8px 0;"><strong>📥 Download:</strong> <span id="resultDownload">0</span> Mbps</div>
-            <div style="margin: 8px 0;"><strong>📤 Upload:</strong> <span id="resultUpload">0</span> Mbps</div>
-            <div style="margin: 8px 0;"><strong>⏱️ Ping:</strong> <span id="resultPing">0</span> ms</div>
-            <div style="margin: 8px 0;"><strong>🕐 Waktu:</strong> <span id="resultTime"></span></div>
-        </div>
-
-        <div class="speedtest-buttons">
-            <button class="speedtest-close" onclick="closeSpeedtest()">Tutup</button>
-            <button class="speedtest-save" id="btnSaveSpeedtest" onclick="saveSpeedtestResult()" style="display: none;">Simpan</button>
-        </div>
-    </div>
-</div>
-
 <script>
     // Supabase Configuration
     const SUPABASE_URL = 'https://usxdioenidqahslgigmm.supabase.co';
@@ -757,9 +596,8 @@
     let selectedPhotos = [];
     let allLaporan = [];
     const NOMOR_ADMIN_WA = "6281949003000";
-    let isLoadingFromDB = false;
 
-    // Kumpulan layout input dinamis untuk masing-masing menu
+    // Kumpulan layout input dinamis
     const templates = {
         psb: `
             <div class="form-group"><label>NIK / NPWP:</label><input type="number" id="nik" placeholder="16 Digit NIK" required></div>
@@ -780,7 +618,7 @@
             </div>
             <div class="form-group"><label>Titik Koordinat (Tikor):</label><input type="text" id="tikor" placeholder="-5.27,105.37" required><button type="button" class="btn-gps" onclick="ambilLokasi()">📍 Ambil Tikor Otomatis</button></div>
             <div class="form-group"><label>No. WA Pelanggan:</label><input type="tel" id="wa" placeholder="0821xxxxxxxx" required></div>
-            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem, Foto Kegiatan PSB, & SS Hasil Speedtest Full!</span>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem, Foto Kegiatan PSB!</span>
         `,
         maintenance: `
             <div class="form-group"><label>TTR (Time to Respon):</label><input type="text" id="ttr" placeholder="Contoh: 09:00 - 09:45" required></div>
@@ -802,7 +640,7 @@
                 <div class="form-group"><label>SN Modem Lama:</label><input type="text" id="sn_lama" class="uppercase" placeholder="SN LAMA" required></div>
                 <div class="form-group"><label>SN Modem Baru:</label><input type="text" id="sn_baru" class="uppercase" placeholder="SN BARU" required></div>
             </div>
-            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem Lama, Foto SN Modem Baru, & SS Hasil Speedtest Full!</span>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem Lama & Foto SN Modem Baru!</span>
         `,
         dismantle: `
             <div class="row">
@@ -839,42 +677,6 @@
     // Setup photo upload
     function setupPhotoUpload() {
         document.getElementById('fotoInput').addEventListener('change', handlePhotoUpload);
-        document.getElementById('ooklaInput').addEventListener('change', handleOoklaUpload);
-    }
-
-    // Handle Ookla screenshot upload
-    let ooklaScreenshot = null;
-    function handleOoklaUpload(event) {
-        const file = event.target.files[0];
-        
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            ooklaScreenshot = {
-                name: file.name,
-                data: e.target.result,
-                size: file.size
-            };
-            
-            // Show thumbnail
-            const preview = document.getElementById('ooklaPreview');
-            preview.innerHTML = `
-                <div style="position: relative; width: 100%; max-width: 200px;">
-                    <img src="${e.target.result}" style="width: 100%; border-radius: 6px; border: 2px solid #ff9800;">
-                    <button type="button" style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px;" onclick="removeOoklaScreenshot()">×</button>
-                    <p style="font-size: 12px; margin: 8px 0 0 0; color: #666;">${file.name}</p>
-                </div>
-            `;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Remove Ookla screenshot
-    function removeOoklaScreenshot() {
-        ooklaScreenshot = null;
-        document.getElementById('ooklaInput').value = '';
-        document.getElementById('ooklaPreview').innerHTML = '';
     }
 
     // Handle photo upload
@@ -901,7 +703,6 @@
                     size: file.size
                 });
 
-                // Show thumbnail
                 const thumb = document.createElement('div');
                 thumb.className = 'foto-thumb';
                 thumb.innerHTML = `
@@ -968,61 +769,16 @@
         }
 
         if (jenis === "psb") {
-            generatedText = `( + Foto SN Modem, Foto Kegiatan PSB, SS Hasil Speedtest full )
-*PSB Area ${area}*
-*A.n :* ${nama}
-*NIK :* ${document.getElementById('nik').value}
-*Alamat :* ${document.getElementById('alamat').value}, RT/RW ${document.getElementById('rtrw').value} (Alamat Instalasi)
-*Paket :* ${document.getElementById('paket').value}rb
-*Modem :* ${document.getElementById('modem').value.toUpperCase()}
-*SN :* ${document.getElementById('sn').value.toUpperCase()}
-*ODP :* ${document.getElementById('odp').value.toUpperCase()}
-*Port :* ${document.getElementById('port').value}
-*Material :* Kabel (${document.getElementById('material').value} Meter)
-*Redaman :* ${document.getElementById('redaman').value}
-*Tikor :* ${document.getElementById('tikor').value}
-*WA :* ${document.getElementById('wa').value}
-${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
-
-# (${teknisi})`;
+            generatedText = `( + Foto SN Modem, Foto Kegiatan PSB )\n*PSB Area ${area}*\n*A.n :* ${nama}\n*NIK :* ${document.getElementById('nik').value}\n*Alamat :* ${document.getElementById('alamat').value}, RT/RW ${document.getElementById('rtrw').value} (Alamat Instalasi)\n*Paket :* ${document.getElementById('paket').value}rb\n*Modem :* ${document.getElementById('modem').value.toUpperCase()}\n*SN :* ${document.getElementById('sn').value.toUpperCase()}\n*ODP :* ${document.getElementById('odp').value.toUpperCase()}\n*Port :* ${document.getElementById('port').value}\n*Material :* Kabel (${document.getElementById('material').value} Meter)\n*Redaman :* ${document.getElementById('redaman').value}\n*Tikor :* ${document.getElementById('tikor').value}\n*WA :* ${document.getElementById('wa').value}\n${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}\n\n# (${teknisi})`;
         } 
         else if (jenis === "maintenance") {
-            generatedText = `( + Foto Kegiatan )
-*Maintenance Area ${area}*
-*A.n :* ${nama}
-*TTR :* ${document.getElementById('ttr').value}
-*Tikor :* ${document.getElementById('tikor').value}
-*Kendala :* ${document.getElementById('kendala').value}
-*Action :* ${document.getElementById('action').value}
-${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
-
-# (${teknisi})`;
+            generatedText = `( + Foto Kegiatan )\n*Maintenance Area ${area}*\n*A.n :* ${nama}\n*TTR :* ${document.getElementById('ttr').value}\n*Tikor :* ${document.getElementById('tikor').value}\n*Kendala :* ${document.getElementById('kendala').value}\n*Action :* ${document.getElementById('action').value}\n${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}\n\n# (${teknisi})`;
         } 
         else if (jenis === "replace") {
-            generatedText = `( + Foto SN Modem Lama, Foto SN Modem Baru, SS Hasil Speedtest Full )
-*Maintenance Area ${area}*
-*A.n :* ${nama}
-*TTR :* ${document.getElementById('ttr').value}
-*Tikor :* ${document.getElementById('tikor').value}
-*Kendala :* ${document.getElementById('kendala').value}
-*Action :* ${document.getElementById('action').value}
-(${document.getElementById('modem_lama').value} >> ${document.getElementById('modem_baru').value})
-(${document.getElementById('sn_lama').value.toUpperCase()} >> ${document.getElementById('sn_baru').value.toUpperCase()})
-${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
-
-# (${teknisi})`;
+            generatedText = `( + Foto SN Modem Lama, Foto SN Modem Baru )\n*Maintenance Area ${area}*\n*A.n :* ${nama}\n*TTR :* ${document.getElementById('ttr').value}\n*Tikor :* ${document.getElementById('tikor').value}\n*Kendala :* ${document.getElementById('kendala').value}\n*Action :* ${document.getElementById('action').value}\n(${document.getElementById('modem_lama').value} >> ${document.getElementById('modem_baru').value})\n(${document.getElementById('sn_lama').value.toUpperCase()} >> ${document.getElementById('sn_baru').value.toUpperCase()})\n${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}\n\n# (${teknisi})`;
         } 
         else if (jenis === "dismantle") {
-            generatedText = `( + Foto SN Modem )
-*Dismantle area ${area}*
-*A.n :* ${nama}
-*Modem :* ${document.getElementById('modem').value.toUpperCase()}
-*SN :* ${document.getElementById('sn').value.toUpperCase()}
-*Tikor :* ${document.getElementById('tikor').value}
-*Alasan :* ${document.getElementById('alasan').value}
-${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
-
-# (${teknisi})`;
+            generatedText = `( + Foto SN Modem )\n*Dismantle area ${area}*\n*A.n :* ${nama}\n*Modem :* ${document.getElementById('modem').value.toUpperCase()}\n*SN :* ${document.getElementById('sn').value.toUpperCase()}\n*Tikor :* ${document.getElementById('tikor').value}\n*Alasan :* ${document.getElementById('alasan').value}\n${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}\n\n# (${teknisi})`;
         }
 
         document.getElementById('output').innerText = generatedText;
@@ -1052,12 +808,6 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         const area = document.getElementById('area').value;
         const nama = document.getElementById('nama').value;
 
-        // Combine generated text dengan speedtest results
-        let chatTextFull = generatedText;
-        if (speedtestResults.download > 0 || speedtestResults.upload > 0) {
-            chatTextFull += `\n\n📊 SPEEDTEST RESULTS:\n*Download:* ${speedtestResults.download.toFixed(2)} Mbps\n*Upload:* ${speedtestResults.upload.toFixed(2)} Mbps\n*Ping:* ${speedtestResults.ping.toFixed(0)} ms`;
-        }
-
         const newLaporan = {
             tanggal: new Date().toISOString().split('T')[0],
             jenis: jenis,
@@ -1066,39 +816,21 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
             nama: nama,
             status: 'Submitted',
             fotos: selectedPhotos,
-            chatText: chatTextFull,
-            ooklaScreenshot: ooklaScreenshot,
-            speedtest: {
-                download: speedtestResults.download,
-                upload: speedtestResults.upload,
-                ping: speedtestResults.ping,
-                timestamp: speedtestResults.timestamp
-            }
+            chatText: generatedText
         };
 
-        // Save ke Supabase
         const success = await saveLaporanToSupabase(newLaporan);
         
         if (success) {
-            // Reload data
             await loadData();
             renderDashboard();
 
-            // Reset form & speedtest & ookla
             document.getElementById('fotoPreview').innerHTML = '';
             selectedPhotos = [];
             document.getElementById('fotoInput').value = '';
-            document.getElementById('ooklaPreview').innerHTML = '';
-            ooklaScreenshot = null;
-            document.getElementById('ooklaInput').value = '';
             document.getElementById('output-container').style.display = 'none';
-            document.getElementById('speedtestInfo').style.display = 'none';
-            speedtestResults = { download: 0, upload: 0, ping: 0, timestamp: null };
-            document.getElementById('infoDownload').textContent = '-';
-            document.getElementById('infoUpload').textContent = '-';
-            document.getElementById('infoPing').textContent = '-';
 
-            alert('Laporan + Speedtest + Ookla Screenshot berhasil disimpan ke cloud!');
+            alert('Laporan berhasil disimpan ke cloud!');
             switchTab('dashboard');
         } else {
             alert('Gagal menyimpan ke cloud. Cek koneksi internet.');
@@ -1107,7 +839,6 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
 
     // Load data dari Supabase
     async function loadData() {
-        isLoadingFromDB = true;
         try {
             const { data, error } = await supabase
                 .from('laporan')
@@ -1115,32 +846,22 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
                 .order('created_at', { ascending: false });
             
             if (error) {
-                console.error('Error loading data:', error);
-                // Fallback ke localStorage
                 const saved = localStorage.getItem('laporanGTI');
-                if (saved) {
-                    allLaporan = JSON.parse(saved);
-                }
+                if (saved) allLaporan = JSON.parse(saved);
             } else {
                 allLaporan = data || [];
-                // Backup ke localStorage juga
                 localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
             }
         } catch (err) {
-            console.error('Error:', err);
-            // Fallback
             const saved = localStorage.getItem('laporanGTI');
-            if (saved) {
-                allLaporan = JSON.parse(saved);
-            }
+            if (saved) allLaporan = JSON.parse(saved);
         }
-        isLoadingFromDB = false;
     }
 
     // Save data ke Supabase
     async function saveLaporanToSupabase(laporan) {
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('laporan')
                 .insert([{
                     tanggal: laporan.tanggal,
@@ -1151,16 +872,10 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
                     status: laporan.status,
                     fotos: laporan.fotos ? JSON.stringify(laporan.fotos) : null,
                     chat_text: laporan.chatText
-                }])
-                .select();
+                }]);
             
-            if (error) {
-                console.error('Error saving to Supabase:', error);
-                return false;
-            }
-            return true;
+            return !error;
         } catch (err) {
-            console.error('Error:', err);
             return false;
         }
     }
@@ -1173,13 +888,8 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
                 .update({ status: newStatus })
                 .eq('id', id);
             
-            if (error) {
-                console.error('Error updating:', error);
-                return false;
-            }
-            return true;
+            return !error;
         } catch (err) {
-            console.error('Error:', err);
             return false;
         }
     }
@@ -1192,13 +902,8 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
                 .delete()
                 .eq('id', id);
             
-            if (error) {
-                console.error('Error deleting:', error);
-                return false;
-            }
-            return true;
+            return !error;
         } catch (err) {
-            console.error('Error:', err);
             return false;
         }
     }
@@ -1218,7 +923,7 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         const tbody = document.querySelector('#tabelLaporan tbody');
 
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Belum ada laporan</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada laporan</td></tr>';
         } else {
             tbody.innerHTML = filtered.map(item => `
                 <tr>
@@ -1230,16 +935,6 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
                         <span class="status-badge status-${item.status.toLowerCase()}" onclick="changeStatus(${item.id})">
                             ${item.status}
                         </span>
-                    </td>
-                    <td>
-                        ${item.speedtest && (item.speedtest.download > 0 || item.speedtest.upload > 0) 
-                            ? `<small>📥${item.speedtest.download.toFixed(1)}<br>📤${item.speedtest.upload.toFixed(1)} Mbps</small>` 
-                            : '-'}
-                    </td>
-                    <td>
-                        ${item.ooklaScreenshot 
-                            ? `<button class="btn-secondary btn-small" onclick="viewOoklaScreenshot(${item.id})">📊 View</button>` 
-                            : '-'}
                     </td>
                     <td>
                         <div class="action-btns">
@@ -1264,7 +959,6 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         const nextIndex = (currentIndex + 1) % statuses.length;
         const newStatus = statuses[nextIndex];
 
-        // Update di Supabase
         const success = await updateStatusSupabase(id, newStatus);
         if (success) {
             item.status = newStatus;
@@ -1292,54 +986,6 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         const item = allLaporan.find(l => l.id === id);
         if (!item) return;
         alert(item.chatText);
-    }
-
-    // View Ookla screenshot
-    function viewOoklaScreenshot(id) {
-        const item = allLaporan.find(l => l.id === id);
-        if (!item || !item.ooklaScreenshot) {
-            alert('Tidak ada Ookla screenshot');
-            return;
-        }
-
-        // Show modal dengan screenshot
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            z-index: 2000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            max-width: 90%;
-            max-height: 90%;
-            overflow: auto;
-            position: relative;
-        `;
-
-        content.innerHTML = `
-            <button onclick="this.parentElement.parentElement.remove()" style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">✕</button>
-            <h3 style="margin-top: 0; color: #0077c2;">Ookla Speedtest Screenshot</h3>
-            <img src="${item.ooklaScreenshot.data}" style="width: 100%; max-width: 500px; border-radius: 6px;">
-            <p style="margin: 10px 0 0 0; font-size: 12px; color: #999;">${item.ooklaScreenshot.name}</p>
-        `;
-
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-        modal.onclick = function(e) {
-            if (e.target === modal) modal.remove();
-        };
     }
 
     // Export CSV
@@ -1387,203 +1033,13 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         document.getElementById('summaryApproved').textContent = filtered.filter(l => l.status === 'Approved').length;
     }
 
-    // Setup event listeners
     document.getElementById('searchText').addEventListener('input', renderDashboard);
     document.getElementById('filterStatus').addEventListener('change', renderDashboard);
 
-    // Register Service Worker untuk PWA
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js').then(registration => {
-            console.log('Service Worker registered:', registration);
-        }).catch(error => {
+        navigator.serviceWorker.register('service-worker.js').catch(error => {
             console.log('Service Worker registration failed:', error);
         });
-    }
-
-    // ============ SPEEDTEST FUNCTIONS ============
-    let speedtestResults = {
-        download: 0,
-        upload: 0,
-        ping: 0,
-        timestamp: null
-    };
-
-    // Run speedtest
-    async function runSpeedtest() {
-        const modal = document.getElementById('speedtestModal');
-        modal.classList.add('active');
-        
-        try {
-            // Test ping
-            await testPing();
-            
-            // Test download
-            await testDownloadSpeed();
-            
-            // Test upload
-            await testUploadSpeed();
-            
-            // Show results
-            document.getElementById('speedtestPhase').style.display = 'none';
-            document.getElementById('speedtestResults').style.display = 'block';
-            document.getElementById('speedtestStatus').textContent = '✓ Selesai!';
-            document.getElementById('btnSaveSpeedtest').style.display = 'block';
-            
-        } catch (error) {
-            console.error('Speedtest error:', error);
-            // Fallback - set default values
-            if (speedtestResults.download === 0) speedtestResults.download = Math.random() * 60 + 5;
-            if (speedtestResults.upload === 0) speedtestResults.upload = Math.random() * 40 + 2;
-            if (speedtestResults.ping === 0) speedtestResults.ping = Math.random() * 50 + 10;
-            
-            document.getElementById('speedtestPhase').style.display = 'none';
-            document.getElementById('speedtestResults').style.display = 'block';
-            document.getElementById('speedtestStatus').textContent = '✓ Selesai (estimate)';
-            document.getElementById('btnSaveSpeedtest').style.display = 'block';
-        }
-    }
-
-    // Test ping
-    async function testPing() {
-        document.getElementById('speedtestStatus').textContent = 'Measuring Ping...';
-        document.getElementById('speedtestPhase').style.display = 'block';
-        document.getElementById('speedtestUnit').textContent = 'ms';
-        
-        let totalPing = 0;
-        const pings = 3;
-        
-        try {
-            for (let i = 0; i < pings; i++) {
-                const start = performance.now();
-                // Try multiple endpoints
-                try {
-                    await fetch('https://www.gstatic.com/favicon.ico', { mode: 'no-cors' });
-                } catch (e) {
-                    await fetch(new Request('data:,', {method: 'HEAD'}));
-                }
-                const end = performance.now();
-                const ping = end - start;
-                totalPing += ping;
-                document.getElementById('speedtestValue').textContent = Math.round(ping);
-            }
-            speedtestResults.ping = Math.round(totalPing / pings);
-        } catch (error) {
-            console.log('Ping test fallback to estimate');
-            // Fallback estimate
-            speedtestResults.ping = Math.floor(Math.random() * 50) + 10;
-        }
-    }
-
-    // Test download speed (dengan timeout)
-    async function testDownloadSpeed() {
-        document.getElementById('speedtestStatus').textContent = 'Measuring Download Speed...';
-        document.getElementById('speedtestUnit').textContent = 'Mbps';
-        
-        try {
-            // Coba method 1: Fetch dengan timeout
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 10000);
-            
-            const testSize = 2 * 1024 * 1024; // 2MB
-            const startTime = performance.now();
-            
-            try {
-                // Buat data lokal untuk test
-                const testData = new Uint8Array(testSize);
-                const blob = new Blob([testData]);
-                
-                // Test dengan local blob (emulate network latency)
-                const blobUrl = URL.createObjectURL(blob);
-                const response = await fetch(blobUrl, { signal: controller.signal });
-                const result = await response.blob();
-                
-                clearTimeout(timeout);
-                const endTime = performance.now();
-                const duration = (endTime - startTime) / 1000;
-                
-                // Simulate network latency (add 500ms)
-                const adjustedDuration = Math.max(duration, 0.5);
-                const speedMbps = (result.size * 8) / (adjustedDuration * 1000000);
-                
-                speedtestResults.download = Math.round(speedMbps * 100) / 100;
-                document.getElementById('speedtestValue').textContent = speedtestResults.download.toFixed(2);
-                
-                URL.revokeObjectURL(blobUrl);
-            } catch (e) {
-                clearTimeout(timeout);
-                throw e;
-            }
-            
-        } catch (error) {
-            console.log('Download test fallback to random estimate');
-            // Fallback: random hasil realistis
-            speedtestResults.download = Math.round((Math.random() * 60 + 5) * 100) / 100;
-            document.getElementById('speedtestValue').textContent = speedtestResults.download.toFixed(2);
-        }
-    }
-
-    // Test upload speed (dengan timeout)
-    async function testUploadSpeed() {
-        document.getElementById('speedtestStatus').textContent = 'Measuring Upload Speed...';
-        document.getElementById('speedtestUnit').textContent = 'Mbps';
-        
-        try {
-            const testSize = 512 * 1024; // 512KB
-            const testData = new Uint8Array(testSize);
-            
-            const startTime = performance.now();
-            
-            // Emulate upload dengan local blob processing
-            const blob = new Blob([testData]);
-            const duration = (performance.now() - startTime) / 1000;
-            
-            // Simulate network latency
-            const adjustedDuration = Math.max(duration, 0.3);
-            const speedMbps = (blob.size * 8) / (adjustedDuration * 1000000);
-            
-            speedtestResults.upload = Math.round(speedMbps * 100) / 100;
-            document.getElementById('speedtestValue').textContent = speedtestResults.upload.toFixed(2);
-            
-        } catch (error) {
-            console.log('Upload test fallback to random estimate');
-            // Fallback: random hasil realistis
-            speedtestResults.upload = Math.round((Math.random() * 40 + 2) * 100) / 100;
-            document.getElementById('speedtestValue').textContent = speedtestResults.upload.toFixed(2);
-        }
-    }
-
-    // Display speedtest results
-    function displaySpeedtestResults() {
-        document.getElementById('resultDownload').textContent = speedtestResults.download.toFixed(2);
-        document.getElementById('resultUpload').textContent = speedtestResults.upload.toFixed(2);
-        document.getElementById('resultPing').textContent = speedtestResults.ping.toFixed(0);
-        document.getElementById('resultTime').textContent = new Date().toLocaleString('id-ID');
-        
-        // Tampilkan di form juga
-        document.getElementById('infoDownload').textContent = speedtestResults.download.toFixed(2);
-        document.getElementById('infoUpload').textContent = speedtestResults.upload.toFixed(2);
-        document.getElementById('infoPing').textContent = speedtestResults.ping.toFixed(0);
-        document.getElementById('speedtestInfo').style.display = 'block';
-        
-        speedtestResults.timestamp = new Date().toISOString();
-    }
-
-    // Save speedtest result
-    async function saveSpeedtestResult() {
-        displaySpeedtestResults();
-        closeSpeedtest();
-    }
-
-    // Close speedtest modal
-    function closeSpeedtest() {
-        const modal = document.getElementById('speedtestModal');
-        modal.classList.remove('active');
-        
-        // Reset
-        document.getElementById('speedtestStatus').textContent = 'Siap dimulai...';
-        document.getElementById('speedtestPhase').style.display = 'none';
-        document.getElementById('speedtestResults').style.display = 'none';
-        document.getElementById('btnSaveSpeedtest').style.display = 'none';
     }
 </script>
 
