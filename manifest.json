@@ -1,7 +1,7 @@
 {
-  "name": "Sistem Laporan GAVAD",
-  "short_name": "Laporan GAVAD",
-  "description": "Aplikasi pelaporan lapangan untuk mitra GAVAD - PSB, Maintenance, Replace, Dismantle",
+  "name": "Sistem Laporan Gitajatin Intermedia",
+  "short_name": "Laporan GTI",
+  "description": "Aplikasi pelaporan lapangan Gitajatin Intermedia - PSB, Maintenance, Replace, Dismantle",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -25,7 +25,7 @@
   "categories": ["business", "productivity"],
   "screenshots": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f4f6f9' width='540' height='720'/><rect fill='%230077c2' width='540' height='100'/><text x='270' y='60' font-size='32' font-weight='bold' fill='white' text-anchor='middle'>Laporan GAVAD</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f4f6f9' width='540' height='720'/><rect fill='%230077c2' width='540' height='100'/><text x='270' y='60' font-size='32' font-weight='bold' fill='white' text-anchor='middle'>Laporan Gitajatin Intermedia</text></svg>",
       "sizes": "540x720",
       "type": "image/svg+xml",
       "form_factor": "narrow"

@@ -1,8 +1,8 @@
-// Service Worker untuk Laporan GAVAD PWA
+// Service Worker untuk Laporan Gitajatin Intermedia PWA
 // Version 1.0 - Offline Support & Caching
 
-const CACHE_NAME = 'laporan-gavad-v1';
-const RUNTIME_CACHE = 'laporan-gavad-runtime-v1';
+const CACHE_NAME = 'laporan-gti-v1';
+const RUNTIME_CACHE = 'laporan-gti-runtime-v1';
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -168,7 +168,7 @@ self.addEventListener('push', event => {
   };
 
   event.waitUntil(
-    self.registration.showNotification('Laporan GAVAD', options)
+    self.registration.showNotification('Laporan Gitajatin Intermedia', options)
   );
 });
 

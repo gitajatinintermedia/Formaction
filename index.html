@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan GAVAD - Sistem Pelaporan Lapangan</title>
+    <title>Laporan Gitajatin Intermedia - Sistem Pelaporan Lapangan</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0077c2">
-    <meta name="description" content="Sistem Pelaporan Lapangan Mitra GAVAD - PSB, Maintenance, Replace, Dismantle">
+    <meta name="description" content="Sistem Pelaporan Lapangan Gitajatin Intermedia - PSB, Maintenance, Replace, Dismantle">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Laporan GAVAD">
+    <meta name="apple-mobile-web-app-title" content="Laporan GTI">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230077c2' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>📋</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -452,8 +452,8 @@
 
 <div class="container">
     <header>
-        <h1>📋 Laporan GAVAD</h1>
-        <p>Sistem Pelaporan Lapangan Mitra GAVAD</p>
+        <h1>📋 Laporan Gitajatin Intermedia</h1>
+        <p>Sistem Pelaporan Lapangan Gitajatin Intermedia</p>
     </header>
 
     <!-- Tabs -->
@@ -871,7 +871,7 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
 
     // Load data
     function loadData() {
-        const saved = localStorage.getItem('laporanGAVAD');
+        const saved = localStorage.getItem('laporanGTI');
         if (saved) {
             allLaporan = JSON.parse(saved);
         }
@@ -879,7 +879,7 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
 
     // Save data
     function saveData() {
-        localStorage.setItem('laporanGAVAD', JSON.stringify(allLaporan));
+        localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
     }
 
     // Render dashboard
@@ -979,7 +979,7 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `laporan-gavad-${new Date().toISOString().split('T')[0]}.csv`;
+        link.download = `laporan-gti-${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     }
 
