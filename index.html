@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan GAVAD - Sistem Pelaporan Lapangan</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0077c2">
+    <meta name="description" content="Sistem Pelaporan Lapangan Mitra GAVAD - PSB, Maintenance, Replace, Dismantle">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Laporan GAVAD">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230077c2' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>📋</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin: 30px auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0077c2 0%, #005691 100%);
+            color: white;
+            padding: 24px 20px;
+            border-radius: 16px 16px 0 0;
+            margin: -30px -20px 20px -20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            color: #0077c2;
+            border-bottom-color: #0077c2;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        h2 {
+            text-align: center;
+            color: #0077c2;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .sub-title {
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #444;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: #fff;
+            color: #333;
+            font-family: inherit;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #aaa;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #0077c2;
+            outline: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .btn-gps {
+            background-color: #e1f5fe;
+            color: #0288d1;
+            border: 1px solid #b3e5fc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 5px;
+            width: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-generate {
+            background-color: #005691;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background-color: #003c66;
+        }
+
+        .btn-copy {
+            background-color: #4caf50;
+            color: white;
+            display: none;
+        }
+
+        .btn-wa {
+            background-color: #25d366;
+            color: white;
+            display: none;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            width: auto;
+            padding: 8px 16px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            width: auto;
+            padding: 8px 16px;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        #output-container {
+            margin-top: 25px;
+            display: none;
+        }
+
+        #output {
+            background: #efeae2;
+            padding: 15px;
+            white-space: pre-line;
+            border-left: 4px solid #075e54;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #262626;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        .info-foto {
+            font-size: 12px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-top: 8px;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 6px;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            border-left: 3px solid #d32f2f;
+        }
+
+        /* Dashboard Styles */
+        .filter-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table thead {
+            background-color: #f8fafc;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .status-draft {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-submitted {
+            background-color: #bfdbfe;
+            color: #0c4a6e;
+        }
+
+        .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        /* Foto Upload */
+        .foto-preview {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .foto-thumb {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .foto-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #0288d1;
+        }
+
+        .foto-thumb .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .action-btns button {
+            width: auto;
+            padding: 6px 10px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .summary-card p:first-child {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .summary-card p:last-child {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0077c2;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            table th, table td {
+                padding: 8px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📋 Laporan GAVAD</h1>
+        <p>Sistem Pelaporan Lapangan Mitra GAVAD</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('form')">➕ Form Laporan</button>
+        <button class="tab-btn" onclick="switchTab('dashboard')">📊 Dashboard (<span id="countLaporan">0</span>)</button>
+    </div>
+
+    <!-- FORM TAB -->
+    <div id="form" class="tab-content active">
+        <form id="mainForm">
+            <!-- Pilihan Jenis Laporan -->
+            <div class="form-group">
+                <label>Jenis Laporan:</label>
+                <select id="jenisLaporan" onchange="renderForm()">
+                    <option value="psb">PSB & Migrasi</option>
+                    <option value="maintenance">Maintenance Standard</option>
+                    <option value="replace">Maintenance Replace / Ganti Modem</option>
+                    <option value="dismantle">Dismantle</option>
+                </select>
+            </div>
+
+            <!-- Input Statis (Selalu Ada) -->
+            <div class="row">
+                <div class="form-group">
+                    <label>Tim/Nama Teknisi:</label>
+                    <input type="text" id="teknisi" placeholder="Contoh: Kabul, Huda" required>
+                </div>
+                <div class="form-group">
+                    <label>Area Kerja:</label>
+                    <select id="area" required>
+                        <option value="">-- Pilih Area --</option>
+                        <option value="Margatiga">Margatiga</option>
+                        <option value="53">53</option>
+                        <option value="Sekampung">Sekampung</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>A.n (Nama Pelanggan):</label>
+                <input type="text" id="nama" placeholder="Nama Lengkap Pelanggan" required>
+            </div>
+
+            <!-- Wadah untuk Form Dinamis -->
+            <div id="dinamisForm"></div>
+
+            <!-- Upload Foto -->
+            <div class="form-group">
+                <label>Upload Foto (Max 3 foto)</label>
+                <input type="file" id="fotoInput" multiple accept="image/*">
+                <small style="color: #999; display: block; margin-top: 6px;">Format: JPG, PNG. Max 5MB per foto</small>
+                <div class="foto-preview" id="fotoPreview"></div>
+            </div>
+
+            <button type="button" class="btn-generate" onclick="generateText()">Generate Format Chat</button>
+        </form>
+
+        <div id="output-container">
+            <h3>Hasil Format Chat:</h3>
+            <div id="output"></div>
+            <button class="btn-copy" id="btnCopy" onclick="copyToClipboard()">Salin Teks Laporan</button>
+            <button class="btn-wa" id="btnWa" onclick="sendToWhatsApp()">Kirim ke WhatsApp Admin</button>
+            <button class="btn-success" id="btnSave" onclick="saveToHistory()" style="display: none; width: 100%; margin-top: 10px;">✓ Simpan ke Laporan</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="dashboard" class="tab-content">
+        <div class="filter-bar">
+            <div class="filter-grid">
+                <input type="text" id="searchText" placeholder="Cari nama/area..." style="padding: 10px 12px;">
+                <select id="filterStatus" style="padding: 10px 12px;">
+                    <option value="">Semua Status</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="Approved">Approved</option>
+                </select>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-secondary" onclick="resetFilter()">Reset</button>
+                <button class="btn-success" onclick="exportCSV()">📥 Export CSV</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="tabelLaporan">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Teknisi</th>
+                        <th>Jenis</th>
+                        <th>Pelanggan</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="text-align: center; padding: 40px 20px; color: #999;">Belum ada laporan</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary-grid">
+            <div class="summary-card">
+                <p>Total</p>
+                <p id="summaryTotal">0</p>
+            </div>
+            <div class="summary-card">
+                <p>Draft</p>
+                <p id="summaryDraft" style="color: #f59e0b;">0</p>
+            </div>
+            <div class="summary-card">
+                <p>Submitted</p>
+                <p id="summarySubmitted" style="color: #3b82f6;">0</p>
+            </div>
+            <div class="summary-card">
+                <p>Approved</p>
+                <p id="summaryApproved" style="color: #10b981;">0</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data management
+    let generatedText = "";
+    let selectedPhotos = [];
+    let allLaporan = [];
+    const NOMOR_ADMIN_WA = "6281949003000";
+
+    // Kumpulan layout input dinamis untuk masing-masing menu
+    const templates = {
+        psb: `
+            <div class="form-group"><label>NIK / NPWP:</label><input type="number" id="nik" placeholder="16 Digit NIK" required></div>
+            <div class="form-group"><label>Alamat Penempatan:</label><input type="text" id="alamat" placeholder="Nama Dusun / Jalan / Desa" required></div>
+            <div class="row">
+                <div class="form-group"><label>RT/RW:</label><input type="text" id="rtrw" placeholder="07/06" required></div>
+                <div class="form-group"><label>Material Kabel (Meter):</label><input type="number" id="material" placeholder="105" required></div>
+                <div class="form-group"><label>Redaman (dB):</label><input type="text" id="redaman" placeholder="18.83" required></div>
+            </div>
+            <div class="row">
+                <div class="form-group"><label>Merek Modem:</label><input type="text" id="modem" class="uppercase" placeholder="VSOL" required></div>
+                <div class="form-group"><label>Serial Number (SN):</label><input type="text" id="sn" class="uppercase" placeholder="VSOL00ACDB7B" required></div>
+            </div>
+            <div class="row">
+                <div class="form-group"><label>Paket Laporan:</label><select id="paket" required><option value="">-- Paket --</option><option value="150">150rb</option><option value="160">160rb</option><option value="165">165rb</option><option value="175">175rb</option><option value="200">200rb</option></select></div>
+                <div class="form-group"><label>Kode ODP:</label><input type="text" id="odp" class="uppercase" placeholder="SR/12" required></div>
+                <div class="form-group"><label>Port ODP:</label><input type="text" id="port" placeholder="05" required></div>
+            </div>
+            <div class="form-group"><label>Titik Koordinat (Tikor):</label><input type="text" id="tikor" placeholder="-5.27,105.37" required><button type="button" class="btn-gps" onclick="ambilLokasi()">📍 Ambil Tikor Otomatis</button></div>
+            <div class="form-group"><label>No. WA Pelanggan:</label><input type="tel" id="wa" placeholder="0821xxxxxxxx" required></div>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem, Foto Kegiatan PSB, & SS Hasil Speedtest Full!</span>
+        `,
+        maintenance: `
+            <div class="form-group"><label>TTR (Time to Respon):</label><input type="text" id="ttr" placeholder="Contoh: 09:00 - 09:45" required></div>
+            <div class="form-group"><label>Titik Koordinat (Tikor):</label><input type="text" id="tikor" placeholder="-5.27,105.37" required><button type="button" class="btn-gps" onclick="ambilLokasi()">📍 Ambil Tikor Otomatis</button></div>
+            <div class="form-group"><label>Kendala (Problem):</label><textarea id="kendala" rows="2" placeholder="Jelaskan kendala kerusakan..." required></textarea></div>
+            <div class="form-group"><label>Action (Perbaikan):</label><textarea id="action" rows="2" placeholder="Jelaskan tindakan perbaikan..." required></textarea></div>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto Kegiatan Perbaikan!</span>
+        `,
+        replace: `
+            <div class="form-group"><label>TTR (Time to Respon):</label><input type="text" id="ttr" placeholder="Contoh: 10:00 - 11:15" required></div>
+            <div class="form-group"><label>Titik Koordinat (Tikor):</label><input type="text" id="tikor" placeholder="-5.27,105.37" required><button type="button" class="btn-gps" onclick="ambilLokasi()">📍 Ambil Tikor Otomatis</button></div>
+            <div class="form-group"><label>Kendala (Problem):</label><textarea id="kendala" rows="2" placeholder="Contoh: Modem Mati Total" required></textarea></div>
+            <div class="form-group"><label>Action (Perbaikan):</label><textarea id="action" rows="2" placeholder="Contoh: Ganti unit modem baru" required></textarea></div>
+            <div class="row">
+                <div class="form-group"><label>Nama Modem Lama:</label><input type="text" id="modem_lama" placeholder="ZTE" required></div>
+                <div class="form-group"><label>Nama Modem Baru:</label><input type="text" id="modem_baru" placeholder="VSOL" required></div>
+            </div>
+            <div class="row">
+                <div class="form-group"><label>SN Modem Lama:</label><input type="text" id="sn_lama" class="uppercase" placeholder="SN LAMA" required></div>
+                <div class="form-group"><label>SN Modem Baru:</label><input type="text" id="sn_baru" class="uppercase" placeholder="SN BARU" required></div>
+            </div>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Modem Lama, Foto SN Modem Baru, & SS Hasil Speedtest Full!</span>
+        `,
+        dismantle: `
+            <div class="row">
+                <div class="form-group"><label>Merek Modem:</label><input type="text" id="modem" class="uppercase" placeholder="ZTE" required></div>
+                <div class="form-group"><label>Serial Number (SN):</label><input type="text" id="sn" class="uppercase" placeholder="ZTEG123456" required></div>
+            </div>
+            <div class="form-group"><label>Titik Koordinat (Tikor):</label><input type="text" id="tikor" placeholder="-5.27,105.37" required><button type="button" class="btn-gps" onclick="ambilLokasi()">📍 Ambil Tikor Otomatis</button></div>
+            <div class="form-group"><label>Alasan Berhenti Berlangganan:</label><textarea id="alasan" rows="2" placeholder="Jelaskan alasan pencabutan perangkat..." required></textarea></div>
+            <span class="info-foto">⚠️ PENTING DI WA: Jangan lupa lampirkan Foto SN Perangkat Cabutan!</span>
+        `
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        renderForm();
+        loadData();
+        setupPhotoUpload();
+        renderDashboard();
+    });
+
+    // Switch tabs
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'dashboard') {
+            renderDashboard();
+        }
+    }
+
+    // Setup photo upload
+    function setupPhotoUpload() {
+        document.getElementById('fotoInput').addEventListener('change', handlePhotoUpload);
+    }
+
+    // Handle photo upload
+    function handlePhotoUpload(event) {
+        const files = Array.from(event.target.files);
+        const maxPhotos = 3;
+
+        if (files.length > maxPhotos) {
+            alert(`Maksimal ${maxPhotos} foto`);
+            event.target.value = '';
+            return;
+        }
+
+        selectedPhotos = [];
+        const preview = document.getElementById('fotoPreview');
+        preview.innerHTML = '';
+
+        files.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedPhotos.push({
+                    name: file.name,
+                    data: e.target.result,
+                    size: file.size
+                });
+
+                // Show thumbnail
+                const thumb = document.createElement('div');
+                thumb.className = 'foto-thumb';
+                thumb.innerHTML = `
+                    <img src="${e.target.result}">
+                    <button type="button" class="remove-btn" onclick="removePhoto(${index})">×</button>
+                `;
+                preview.appendChild(thumb);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Remove photo
+    function removePhoto(index) {
+        selectedPhotos.splice(index, 1);
+        document.getElementById('fotoInput').value = '';
+        
+        const preview = document.getElementById('fotoPreview');
+        preview.innerHTML = '';
+        selectedPhotos.forEach((photo, idx) => {
+            const thumb = document.createElement('div');
+            thumb.className = 'foto-thumb';
+            thumb.innerHTML = `
+                <img src="${photo.data}">
+                <button type="button" class="remove-btn" onclick="removePhoto(${idx})">×</button>
+            `;
+            preview.appendChild(thumb);
+        });
+    }
+
+    // Render form dinamis
+    function renderForm() {
+        const jenis = document.getElementById('jenisLaporan').value;
+        document.getElementById('dinamisForm').innerHTML = templates[jenis];
+        document.getElementById('output-container').style.display = 'none';
+    }
+
+    // Get GPS location
+    function ambilLokasi() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('tikor').value = position.coords.latitude + "," + position.coords.longitude;
+                alert("Koordinat GPS berhasil dimasukkan!");
+            }, function() {
+                alert("Gagal memuat GPS. Pastikan setelan izin lokasi browser aktif.");
+            });
+        }
+    }
+
+    // Generate format chat
+    function generateText() {
+        const jenis = document.getElementById('jenisLaporan').value;
+        const teknisi = document.getElementById('teknisi').value;
+        const area = document.getElementById('area').value;
+        const nama = document.getElementById('nama').value;
+
+        if(!teknisi || !area || !nama) {
+            alert("Mohon lengkapi data Teknisi, Area, dan Nama Pelanggan utama!");
+            return;
+        }
+
+        if (!document.getElementById('mainForm').reportValidity()) {
+            return;
+        }
+
+        if (jenis === "psb") {
+            generatedText = `( + Foto SN Modem, Foto Kegiatan PSB, SS Hasil Speedtest full )
+*PSB Area ${area}*
+*A.n :* ${nama}
+*NIK :* ${document.getElementById('nik').value}
+*Alamat :* ${document.getElementById('alamat').value}, RT/RW ${document.getElementById('rtrw').value} (Alamat Instalasi)
+*Paket :* ${document.getElementById('paket').value}rb
+*Modem :* ${document.getElementById('modem').value.toUpperCase()}
+*SN :* ${document.getElementById('sn').value.toUpperCase()}
+*ODP :* ${document.getElementById('odp').value.toUpperCase()}
+*Port :* ${document.getElementById('port').value}
+*Material :* Kabel (${document.getElementById('material').value} Meter)
+*Redaman :* ${document.getElementById('redaman').value}
+*Tikor :* ${document.getElementById('tikor').value}
+*WA :* ${document.getElementById('wa').value}
+${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
+
+# (${teknisi})`;
+        } 
+        else if (jenis === "maintenance") {
+            generatedText = `( + Foto Kegiatan )
+*Maintenance Area ${area}*
+*A.n :* ${nama}
+*TTR :* ${document.getElementById('ttr').value}
+*Tikor :* ${document.getElementById('tikor').value}
+*Kendala :* ${document.getElementById('kendala').value}
+*Action :* ${document.getElementById('action').value}
+${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
+
+# (${teknisi})`;
+        } 
+        else if (jenis === "replace") {
+            generatedText = `( + Foto SN Modem Lama, Foto SN Modem Baru, SS Hasil Speedtest Full )
+*Maintenance Area ${area}*
+*A.n :* ${nama}
+*TTR :* ${document.getElementById('ttr').value}
+*Tikor :* ${document.getElementById('tikor').value}
+*Kendala :* ${document.getElementById('kendala').value}
+*Action :* ${document.getElementById('action').value}
+(${document.getElementById('modem_lama').value} >> ${document.getElementById('modem_baru').value})
+(${document.getElementById('sn_lama').value.toUpperCase()} >> ${document.getElementById('sn_baru').value.toUpperCase()})
+${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
+
+# (${teknisi})`;
+        } 
+        else if (jenis === "dismantle") {
+            generatedText = `( + Foto SN Modem )
+*Dismantle area ${area}*
+*A.n :* ${nama}
+*Modem :* ${document.getElementById('modem').value.toUpperCase()}
+*SN :* ${document.getElementById('sn').value.toUpperCase()}
+*Tikor :* ${document.getElementById('tikor').value}
+*Alasan :* ${document.getElementById('alasan').value}
+${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
+
+# (${teknisi})`;
+        }
+
+        document.getElementById('output').innerText = generatedText;
+        document.getElementById('output-container').style.display = 'block';
+        document.getElementById('btnCopy').style.display = 'block';
+        document.getElementById('btnWa').style.display = 'block';
+        document.getElementById('btnSave').style.display = 'block';
+    }
+
+    // Copy to clipboard
+    function copyToClipboard() {
+        navigator.clipboard.writeText(generatedText).then(() => {
+            alert("Teks laporan berhasil disalin!");
+        });
+    }
+
+    // Send to WhatsApp
+    function sendToWhatsApp() {
+        const encodedText = encodeURIComponent(generatedText);
+        window.open(`https://api.whatsapp.com/send?phone=${NOMOR_ADMIN_WA}&text=${encodedText}`, '_blank');
+    }
+
+    // Save to history
+    function saveToHistory() {
+        const jenis = document.getElementById('jenisLaporan').value;
+        const teknisi = document.getElementById('teknisi').value;
+        const area = document.getElementById('area').value;
+        const nama = document.getElementById('nama').value;
+
+        const newLaporan = {
+            id: Date.now(),
+            timestamp: new Date().toLocaleString('id-ID'),
+            tanggal: new Date().toISOString().split('T')[0],
+            jenis: jenis,
+            teknisi: teknisi,
+            area: area,
+            nama: nama,
+            status: 'Submitted',
+            fotos: selectedPhotos,
+            chatText: generatedText
+        };
+
+        allLaporan.unshift(newLaporan);
+        saveData();
+        
+        // Reset form
+        document.getElementById('fotoPreview').innerHTML = '';
+        selectedPhotos = [];
+        document.getElementById('fotoInput').value = '';
+        document.getElementById('output-container').style.display = 'none';
+
+        alert('Laporan berhasil disimpan ke history!');
+        switchTab('dashboard');
+    }
+
+    // Load data
+    function loadData() {
+        const saved = localStorage.getItem('laporanGAVAD');
+        if (saved) {
+            allLaporan = JSON.parse(saved);
+        }
+    }
+
+    // Save data
+    function saveData() {
+        localStorage.setItem('laporanGAVAD', JSON.stringify(allLaporan));
+    }
+
+    // Render dashboard
+    function renderDashboard() {
+        const search = document.getElementById('searchText').value.toLowerCase();
+        const filterStatus = document.getElementById('filterStatus').value;
+
+        const filtered = allLaporan.filter(item => {
+            const matchSearch = !search || item.nama.toLowerCase().includes(search) || item.area.toLowerCase().includes(search);
+            const matchStatus = !filterStatus || item.status === filterStatus;
+            return matchSearch && matchStatus;
+        });
+
+        document.getElementById('countLaporan').textContent = allLaporan.length;
+        const tbody = document.querySelector('#tabelLaporan tbody');
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Belum ada laporan</td></tr>';
+        } else {
+            tbody.innerHTML = filtered.map(item => `
+                <tr>
+                    <td>${item.tanggal}</td>
+                    <td>${item.teknisi}</td>
+                    <td>${item.jenis}</td>
+                    <td>${item.nama}</td>
+                    <td>
+                        <span class="status-badge status-${item.status.toLowerCase()}" onclick="changeStatus(${item.id})">
+                            ${item.status}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn-success" onclick="viewLaporan(${item.id})">👁️</button>
+                            <button class="btn-danger" onclick="deleteItem(${item.id})">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        updateSummary(filtered);
+    }
+
+    // Change status
+    function changeStatus(id) {
+        const item = allLaporan.find(l => l.id === id);
+        if (!item) return;
+        
+        const statuses = ['Draft', 'Submitted', 'Approved'];
+        const currentIndex = statuses.indexOf(item.status);
+        const nextIndex = (currentIndex + 1) % statuses.length;
+        item.status = statuses[nextIndex];
+        
+        saveData();
+        renderDashboard();
+    }
+
+    // Delete item
+    function deleteItem(id) {
+        if (confirm('Hapus laporan ini?')) {
+            allLaporan = allLaporan.filter(l => l.id !== id);
+            saveData();
+            renderDashboard();
+        }
+    }
+
+    // View laporan detail
+    function viewLaporan(id) {
+        const item = allLaporan.find(l => l.id === id);
+        if (!item) return;
+        alert(item.chatText);
+    }
+
+    // Export CSV
+    function exportCSV() {
+        if (allLaporan.length === 0) {
+            alert('Tidak ada data untuk di-export');
+            return;
+        }
+
+        const headers = ['Tanggal', 'Teknisi', 'Jenis', 'Area', 'Pelanggan', 'Status', 'Jumlah Foto'];
+        const rows = allLaporan.map(item => [
+            item.tanggal,
+            item.teknisi,
+            item.jenis,
+            item.area,
+            item.nama,
+            item.status,
+            item.fotos ? item.fotos.length : 0
+        ]);
+
+        const csv = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `laporan-gavad-${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
+
+    // Reset filter
+    function resetFilter() {
+        document.getElementById('searchText').value = '';
+        document.getElementById('filterStatus').value = '';
+        renderDashboard();
+    }
+
+    // Update summary
+    function updateSummary(filtered) {
+        document.getElementById('summaryTotal').textContent = filtered.length;
+        document.getElementById('summaryDraft').textContent = filtered.filter(l => l.status === 'Draft').length;
+        document.getElementById('summarySubmitted').textContent = filtered.filter(l => l.status === 'Submitted').length;
+        document.getElementById('summaryApproved').textContent = filtered.filter(l => l.status === 'Approved').length;
+    }
+
+    // Setup event listeners
+    document.getElementById('searchText').addEventListener('input', renderDashboard);
+    document.getElementById('filterStatus').addEventListener('change', renderDashboard);
+
+    // Register Service Worker untuk PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js').then(registration => {
+            console.log('Service Worker registered:', registration);
+        }).catch(error => {
+            console.log('Service Worker registration failed:', error);
+        });
+    }
+</script>
+
+</body>
+</html>
