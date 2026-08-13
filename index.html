@@ -12,6 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Laporan GTI">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%230077c2' width='180' height='180'/><text x='50%' y='50%' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dy='.3em'>📋</text></svg>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.2"></script>
     <style>
         * {
             margin: 0;
@@ -580,11 +581,17 @@
 </div>
 
 <script>
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://usxdioenidqahslgigmm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzeGRpb2VuaWRxYWhzbGdpZ21tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MTA4MzcsImV4cCI6MjEwMjE4NjgzN30.viSn-gLnBdhRU8qN4VOaaHSclmAsWLBR31v9OGWm3i0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // Data management
     let generatedText = "";
     let selectedPhotos = [];
     let allLaporan = [];
     const NOMOR_ADMIN_WA = "6281949003000";
+    let isLoadingFromDB = false;
 
     // Kumpulan layout input dinamis untuk masing-masing menu
     const templates = {
@@ -643,9 +650,9 @@
     };
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         renderForm();
-        loadData();
+        await loadData();
         setupPhotoUpload();
         renderDashboard();
     });
@@ -836,16 +843,14 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
         window.open(`https://api.whatsapp.com/send?phone=${NOMOR_ADMIN_WA}&text=${encodedText}`, '_blank');
     }
 
-    // Save to history
-    function saveToHistory() {
+    // Save to history - Supabase
+    async function saveToHistory() {
         const jenis = document.getElementById('jenisLaporan').value;
         const teknisi = document.getElementById('teknisi').value;
         const area = document.getElementById('area').value;
         const nama = document.getElementById('nama').value;
 
         const newLaporan = {
-            id: Date.now(),
-            timestamp: new Date().toLocaleString('id-ID'),
             tanggal: new Date().toISOString().split('T')[0],
             jenis: jenis,
             teknisi: teknisi,
@@ -856,30 +861,123 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
             chatText: generatedText
         };
 
-        allLaporan.unshift(newLaporan);
-        saveData();
+        // Save ke Supabase
+        const success = await saveLaporanToSupabase(newLaporan);
         
-        // Reset form
-        document.getElementById('fotoPreview').innerHTML = '';
-        selectedPhotos = [];
-        document.getElementById('fotoInput').value = '';
-        document.getElementById('output-container').style.display = 'none';
+        if (success) {
+            // Reload data
+            await loadData();
+            renderDashboard();
 
-        alert('Laporan berhasil disimpan ke history!');
-        switchTab('dashboard');
-    }
+            // Reset form
+            document.getElementById('fotoPreview').innerHTML = '';
+            selectedPhotos = [];
+            document.getElementById('fotoInput').value = '';
+            document.getElementById('output-container').style.display = 'none';
 
-    // Load data
-    function loadData() {
-        const saved = localStorage.getItem('laporanGTI');
-        if (saved) {
-            allLaporan = JSON.parse(saved);
+            alert('Laporan berhasil disimpan ke cloud!');
+            switchTab('dashboard');
+        } else {
+            alert('Gagal menyimpan ke cloud. Cek koneksi internet.');
         }
     }
 
-    // Save data
-    function saveData() {
-        localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
+    // Load data dari Supabase
+    async function loadData() {
+        isLoadingFromDB = true;
+        try {
+            const { data, error } = await supabase
+                .from('laporan')
+                .select('*')
+                .order('created_at', { ascending: false });
+            
+            if (error) {
+                console.error('Error loading data:', error);
+                // Fallback ke localStorage
+                const saved = localStorage.getItem('laporanGTI');
+                if (saved) {
+                    allLaporan = JSON.parse(saved);
+                }
+            } else {
+                allLaporan = data || [];
+                // Backup ke localStorage juga
+                localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            // Fallback
+            const saved = localStorage.getItem('laporanGTI');
+            if (saved) {
+                allLaporan = JSON.parse(saved);
+            }
+        }
+        isLoadingFromDB = false;
+    }
+
+    // Save data ke Supabase
+    async function saveLaporanToSupabase(laporan) {
+        try {
+            const { data, error } = await supabase
+                .from('laporan')
+                .insert([{
+                    tanggal: laporan.tanggal,
+                    teknisi: laporan.teknisi,
+                    jenis: laporan.jenis,
+                    area: laporan.area,
+                    nama: laporan.nama,
+                    status: laporan.status,
+                    fotos: laporan.fotos ? JSON.stringify(laporan.fotos) : null,
+                    chat_text: laporan.chatText
+                }])
+                .select();
+            
+            if (error) {
+                console.error('Error saving to Supabase:', error);
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Error:', err);
+            return false;
+        }
+    }
+
+    // Update status di Supabase
+    async function updateStatusSupabase(id, newStatus) {
+        try {
+            const { error } = await supabase
+                .from('laporan')
+                .update({ status: newStatus })
+                .eq('id', id);
+            
+            if (error) {
+                console.error('Error updating:', error);
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Error:', err);
+            return false;
+        }
+    }
+
+    // Delete dari Supabase
+    async function deleteFromSupabase(id) {
+        try {
+            const { error } = await supabase
+                .from('laporan')
+                .delete()
+                .eq('id', id);
+            
+            if (error) {
+                console.error('Error deleting:', error);
+                return false;
+            }
+            return true;
+        } catch (err) {
+            console.error('Error:', err);
+            return false;
+        }
     }
 
     // Render dashboard
@@ -924,25 +1022,35 @@ ${selectedPhotos.length > 0 ? `*Foto:* ${selectedPhotos.length} file` : ''}
     }
 
     // Change status
-    function changeStatus(id) {
+    async function changeStatus(id) {
         const item = allLaporan.find(l => l.id === id);
         if (!item) return;
         
         const statuses = ['Draft', 'Submitted', 'Approved'];
         const currentIndex = statuses.indexOf(item.status);
         const nextIndex = (currentIndex + 1) % statuses.length;
-        item.status = statuses[nextIndex];
-        
-        saveData();
-        renderDashboard();
+        const newStatus = statuses[nextIndex];
+
+        // Update di Supabase
+        const success = await updateStatusSupabase(id, newStatus);
+        if (success) {
+            item.status = newStatus;
+            localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
+            renderDashboard();
+        }
     }
 
     // Delete item
-    function deleteItem(id) {
+    async function deleteItem(id) {
         if (confirm('Hapus laporan ini?')) {
-            allLaporan = allLaporan.filter(l => l.id !== id);
-            saveData();
-            renderDashboard();
+            const success = await deleteFromSupabase(id);
+            if (success) {
+                allLaporan = allLaporan.filter(l => l.id !== id);
+                localStorage.setItem('laporanGTI', JSON.stringify(allLaporan));
+                renderDashboard();
+            } else {
+                alert('Gagal menghapus. Cek koneksi internet.');
+            }
         }
     }
 
